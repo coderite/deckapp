@@ -1,0 +1,4 @@
+[*] add error messaging for header typos
+[ ] add logo injection
+[ ] add normalization to the headers before check
+[ ] add a help icon to indicate what the csv file should contain

@@ -48,11 +48,18 @@ const Form = () => {
     const pptx = createPresentation();
     if (pptx) console.log('pptx created');
 
-    for (const entry of records) {
-      console.log('creating slide entry', entry);
-      await createSlide(pptx, entry);
-      setProgressCount(prevProgressCount => prevProgressCount + 1);
-      console.log('createHandler end of loop');
+    // a try catch block is needed to catch nested errors in async functions and display it on the UI
+    try {
+      for (const entry of records) {
+        console.log('creating slide entry', entry);
+        await createSlide(pptx, entry);
+        setProgressCount(prevProgressCount => prevProgressCount + 1);
+        console.log('createHandler end of loop');
+      }
+    } catch (error) {
+      console.log('error caught in nested function', error);
+      console.log('error caught in nested function', error);
+      setFormErrorLabel(error.message);
     }
 
     /* const createSlidesPromises = records.map(async entry => {

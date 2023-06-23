@@ -180,8 +180,14 @@ export async function createSlide(pptx, data) {
 
       resolve(slide);
     } catch (error) {
-      console.log('there is an error in createSlide: ', data);
+      console.log(
+        'there is an error in createSlide: ',
+        error.message,
+        'data: ',
+        data
+      );
       reject(error);
+      //throw error;
     }
   });
 }
