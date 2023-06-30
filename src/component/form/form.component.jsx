@@ -5,11 +5,7 @@ import {
   Heading,
   Button,
   VStack,
-  Alert,
-  AlertIcon,
-  AlertDescription,
   ScaleFade,
-  CloseButton,
   Spinner,
 } from '@chakra-ui/react';
 
@@ -22,6 +18,8 @@ import {
   createSlide,
   writePresentiationToFile,
 } from '../../pptx.js';
+import HelpDrawer from '../drawer/drawer.component';
+import AlertMessage from '../alert/alert.component';
 
 const Form = () => {
   const {
@@ -29,37 +27,33 @@ const Form = () => {
     records,
     fileName,
     formErrorLabel,
+    formSuccessLabel,
     setFormErrorLabel,
+    setFormSuccessLabel,
     recordsCount,
     setFormLoading,
     formLoading,
   } = useContext(FormContext);
 
-  function AlertErrorHandler() {
-    setFormErrorLabel(false);
-  }
-
   const createHandler = async () => {
     setProgressCount(() => 0);
     setFormLoading(() => true);
-    console.log('createHandler');
-    console.log('records', records);
+    let errorSeen = false;
+    //console.log('records', records);
 
     const pptx = createPresentation();
-    if (pptx) console.log('pptx created');
 
     // a try catch block is needed to catch nested errors in async functions and display it on the UI
     try {
       for (const entry of records) {
-        console.log('creating slide entry', entry);
+        console.log('creating slide entry: ', entry);
         await createSlide(pptx, entry);
         setProgressCount(prevProgressCount => prevProgressCount + 1);
-        console.log('createHandler end of loop');
       }
     } catch (error) {
-      console.log('error caught in nested function', error);
-      console.log('error caught in nested function', error);
+      console.log('caught this error: ', error);
       setFormErrorLabel(error.message);
+      errorSeen = true;
     }
 
     /* const createSlidesPromises = records.map(async entry => {
@@ -77,6 +71,10 @@ const Form = () => {
 
     writePresentiationToFile(pptx, 'test.pptx');
     setFormLoading(() => false);
+
+    if (!errorSeen) {
+      setFormSuccessLabel('All done!');
+    }
   };
 
   return (
@@ -89,7 +87,11 @@ const Form = () => {
             </Heading>
 
             {fileName && fileName.length > 0 ? <FilenameTag /> : <FileUpload />}
+
+            {/** # slides and % progress stats  */}
             <Stats />
+
+            {/** create button */}
             {recordsCount > 0 && (
               <Button
                 colorScheme="teal"
@@ -102,21 +104,20 @@ const Form = () => {
               </Button>
             )}
 
+            {/** alert message for both error and success status */}
             {formErrorLabel && (
-              <Alert status="error">
-                <AlertIcon />
-                <Box>
-                  <AlertDescription>{formErrorLabel}</AlertDescription>
-                </Box>
-                <CloseButton
-                  alignSelf="flex-start"
-                  position="relative"
-                  right={-1}
-                  top={-1}
-                  onClick={AlertErrorHandler}
-                />
-              </Alert>
+              <AlertMessage
+                data={{ status: 'error', message: formErrorLabel }}
+              />
             )}
+            {formSuccessLabel && !formErrorLabel && (
+              <AlertMessage
+                data={{ status: 'sucess', message: formSuccessLabel }}
+              />
+            )}
+
+            {/** help drawer with instructions on how to use the app */}
+            <HelpDrawer />
           </VStack>
         </Box>
       </Center>

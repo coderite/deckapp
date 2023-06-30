@@ -31,9 +31,9 @@ function pointsToInches(points, pointsPerInch = 72) {
 }
 
 // convert the image dimensions from pixels to points
-function pixelsToPoints(value, pixelsPerInch = 96, pointsPerInch = 72) {
+/* function pixelsToPoints(value, pixelsPerInch = 96, pointsPerInch = 72) {
   return (value / pixelsPerInch) * pointsPerInch;
-}
+} */
 
 function pixelsToInches(value, pixelsPerInch = 96) {
   return value / pixelsPerInch;
@@ -65,51 +65,21 @@ export async function createSlide(pptx, data) {
       console.log(image1Url, image2Url, image3Url);
 
       // Download the images and get their dimensions in pixels and aspect ratio in inches for PptxGenJS to use when adding the images to the slide
+      // only send image to Firebase if the images exist
       console.log('downloading images...');
       const [image1, image2, image3] = await Promise.all([
         sendDataToFirebaseFunction({ image_url: image1Url }),
         sendDataToFirebaseFunction({ image_url: image2Url }),
         sendDataToFirebaseFunction({ image_url: image3Url }),
       ]);
-      //const image1 = await downloadImageAsBase64(image1Url);
-      console.log(`image1: ${image1.width} x ${image1.height}`);
-      console.log(
-        'image1: ' +
-          JSON.stringify(
-            getAspectRatio(
-              image1.width,
-              image1.height,
-              image1.width,
-              image1.height
-            )
-          )
-      );
-      //const image2 = await downloadImageAsBase64(image2Url);
-      console.log(`image2: ${image2.width} x ${image2.height}`);
-      console.log(
-        'image2: ' +
-          JSON.stringify(
-            getAspectRatio(
-              image2.width,
-              image2.height,
-              image1.width,
-              image1.height
-            )
-          )
-      );
-      //const image3 = await downloadImageAsBase64(image3Url);
-      console.log(`image3: ${image3.width} x ${image3.height}`);
-      console.log(
-        'image3: ' +
-          JSON.stringify(
-            getAspectRatio(
-              image3.width,
-              image3.height,
-              image1.width,
-              image1.height
-            )
-          )
-      );
+
+      // add the logo to the slide
+      let logoBase64;
+      try {
+        logoBase64 = await convertImageToBase64('/trustlyLogo.png');
+      } catch (error) {
+        console.log(`Error converting image to base64: ${error.message}`);
+      }
 
       // Specify the maximum dimensions for the images
       const maxWidth = 200;
@@ -117,6 +87,7 @@ export async function createSlide(pptx, data) {
 
       // Create a new slide
       const slide = pptx.addSlide();
+
       // Add images to the slide while maintaining their aspect ratios
       slide.addImage({
         data: image1.base64_image,
@@ -135,6 +106,14 @@ export async function createSlide(pptx, data) {
         x: pixelsToInches(maxWidth) * 2 + pointsToInches(15),
         y: pointsToInches(5),
         ...getAspectRatio(image3.width, image3.height, maxWidth, maxHeight),
+      });
+
+      // Add the Trustly logo to the slide
+      slide.addImage({
+        data: logoBase64,
+        x: pointsToInches(600),
+        y: pointsToInches(5),
+        ...getAspectRatio(1250, 416, 150, 150),
       });
 
       // Add a bulleted list
@@ -187,16 +166,35 @@ export async function createSlide(pptx, data) {
         data
       );
       reject(error);
-      //throw error;
     }
   });
 }
 
-export function writePresentiationToFile(pptx) {
-  console.log('writing presentation to file...');
-  // Save the presentation
-  pptx.writeFile({ fileName: 'slides.pptx' }).then(blob => {
-    //saveAs(blob, 'slides.pptx');
-    console.log('PPTX file with images and aspect ratio maintained created!');
+function convertImageToBase64(filepath) {
+  return new Promise((resolve, reject) => {
+    // Fetch the image file
+    fetch(filepath)
+      .then(response => response.blob())
+      .then(imageBlob => {
+        // Create a new FileReader instance
+        const reader = new FileReader();
+
+        // When the file has been read
+        reader.onloadend = function () {
+          // `reader.result` is a data URL representing the file
+          const base64data = reader.result; // keep the full data URL
+
+          resolve(base64data);
+        };
+
+        // Read the Blob as a data URL
+        reader.readAsDataURL(imageBlob);
+      })
+      .catch(reject);
   });
+}
+
+export function writePresentiationToFile(pptx) {
+  // Save the presentation
+  pptx.writeFile({ fileName: 'slides.pptx' }).then(blob => {});
 }

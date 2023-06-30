@@ -12,18 +12,17 @@ export const FileUpload = () => {
 
   const onDrop = useCallback(async acceptedFiles => {
     const file = acceptedFiles[0];
-    // console.log('File dropped:', file);
     setIsFileUploading(true);
 
     try {
       if (file.type === 'text/csv') {
         const data = await parseCsvFile(file);
-        console.log('file upload data', JSON.stringify(data));
-        //console.log('filename', file.name);
+        //console.log('file upload data', JSON.stringify(data));
+
         setFileName(file.name);
         setRecords(data);
       } else {
-        console.error('Invalid file type. Please upload a CSV file.');
+        //console.error('Invalid file type. Please upload a CSV file.');
         setFormErrorLabel('Invalid file type. Please upload a CSV file.');
       }
     } catch (error) {

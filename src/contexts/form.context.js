@@ -57,6 +57,8 @@ export const FormProvider = ({ children }) => {
     setRecords([]);
     setFileName('');
     setProgressCount(() => 0);
+    setFormErrorLabel('');
+    setFormSuccessLabel('');
   };
 
   const value = {

@@ -1,4 +1,6 @@
 [*] add error messaging for header typos
-[ ] add logo injection
+[*] add logo injection
 [ ] add normalization to the headers before check
 [ ] add a help icon to indicate what the csv file should contain
+[ ] add placeholder screenshots for missing screenshot links
+[*] update success message logic preventing it from displaying during an error message

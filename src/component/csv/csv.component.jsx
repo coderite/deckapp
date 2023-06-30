@@ -12,7 +12,7 @@ function verifyHeaders(expectedHeaders, parsedHeaders) {
   // if the headers are incorrect, reject the promise with an error message
   if (!areHeadersCorrect) {
     throw new Error(
-      'Header row error! Check that the header row in the CSV file contains the following entries: slot, tester, video, screenshot1, screenshot2, screenshot3, merchant, location '
+      'Header row error! Check that the header row in the CSV file contains these lowercase entries: slot, tester, video, screenshot1, screenshot2, screenshot3, merchant, location '
     );
   }
 }
@@ -51,20 +51,28 @@ function parseCsvFile(file) {
       for (const rowData of data) {
         // Create an object 'rowObject' mapping each field to its corresponding value in the CSV row.
         // Note that 'id' is generated using the 'uuidv4' function.
+        if (
+          rowData.screenshot1 === undefined &&
+          rowData.screenshot2 === undefined &&
+          rowData.screenshot3 === undefined
+        ) {
+          continue;
+        }
         const rowObject = {
           id: uuidv4(),
-          slot: rowData.slot.trim(),
-          tester: rowData.tester.trim(),
-          video: rowData.video.trim(),
-          payment: rowData.screenshot1.trim(),
-          widget: rowData.screenshot2.trim(),
-          security: rowData.screenshot3.trim(),
-          merchant: rowData.merchant.trim(),
-          location: rowData.location.toUpperCase(),
+          slot: rowData.slot,
+          tester: rowData.tester,
+          video: rowData.video,
+          payment: rowData.screenshot1,
+          widget: rowData.screenshot2,
+          security: rowData.screenshot3,
+          merchant: rowData.merchant,
+          location: rowData.location,
         };
         // Add the created object to the 'rows' array.
         rows.push(rowObject);
       }
+
       // Resolve the promise with the rows array after removing empty entries.
       resolve(removeEmptyEntries(rows));
     };
