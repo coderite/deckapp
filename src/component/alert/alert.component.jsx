@@ -10,13 +10,13 @@ import { useContext } from 'react';
 import { FormContext } from '../../contexts/form.context.js';
 
 const AlertMessage = ({ data }) => {
-  const { setFormErrorLabel, setFormSucessLabel } = useContext(FormContext);
+  const { setFormErrorLabel, setFormSuccessLabel } = useContext(FormContext);
 
   const { status, message } = data;
 
   function closeHandler() {
     if (status === 'success') {
-      setFormSucessLabel('');
+      setFormSuccessLabel('');
     } else if (status === 'error') {
       setFormErrorLabel('');
     }

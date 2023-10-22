@@ -1,11 +1,17 @@
 import PptxGenJS from 'pptxgenjs';
 import axios from 'axios';
 
+/**
+ * Sends data to Firebase Function and returns the result.
+ * @param {Object} payload contains an object with an image URL.
+ * @returns {Promise} A promise that resolves with the response data or rejects with an error.
+ */
 const sendDataToFirebaseFunction = payload => {
   return new Promise(async (resolve, reject) => {
     const endpoint =
       'https://us-central1-presentationcreator.cloudfunctions.net/operations-api/api/urlToBase64';
     try {
+      /* await a response from Google Functions */
       const response = await axios.post(endpoint, payload);
       resolve(response.data);
     } catch (error) {
@@ -30,11 +36,6 @@ function pointsToInches(points, pointsPerInch = 72) {
   return points / pointsPerInch;
 }
 
-// convert the image dimensions from pixels to points
-/* function pixelsToPoints(value, pixelsPerInch = 96, pointsPerInch = 72) {
-  return (value / pixelsPerInch) * pointsPerInch;
-} */
-
 function pixelsToInches(value, pixelsPerInch = 96) {
   return value / pixelsPerInch;
 }
@@ -56,17 +57,16 @@ export async function createSlide(pptx, data) {
       const { tester, video, payment, widget, security, merchant, location } =
         data;
 
-      console.log(`slot: ${JSON.stringify(data, null, 2)}`);
+      //console.log(`slot: ${JSON.stringify(data, null, 2)}`);
 
+      /* if any of these are NULL we need to figure out what to do so they don't get parsed */
       const image1Url = payment;
       const image2Url = widget;
       const image3Url = security;
 
-      console.log(image1Url, image2Url, image3Url);
-
       // Download the images and get their dimensions in pixels and aspect ratio in inches for PptxGenJS to use when adding the images to the slide
       // only send image to Firebase if the images exist
-      console.log('downloading images...');
+      console.log('converting image links via Firebase...');
       const [image1, image2, image3] = await Promise.all([
         sendDataToFirebaseFunction({ image_url: image1Url }),
         sendDataToFirebaseFunction({ image_url: image2Url }),

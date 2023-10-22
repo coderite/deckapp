@@ -7,15 +7,19 @@ import {
   DrawerCloseButton,
   DrawerHeader,
   DrawerBody,
+  DrawerFooter,
   useDisclosure,
 } from '@chakra-ui/react';
 import { QuestionOutlineIcon } from '@chakra-ui/icons';
+const pino = require('pino');
+const logger = pino({ prettyPrint: true });
 
 export default function HelpDrawer() {
   const [size, setSize] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleClick = newSize => {
+    logger.info('hello world');
     setSize(newSize);
     onOpen();
   };
@@ -46,6 +50,11 @@ export default function HelpDrawer() {
               columns does not matter.
             </p>
             <br />
+            <p>
+              Any missing screenshot URLs will automatically be replaced by an
+              appropriate placeholder.
+            </p>
+            <br />
             <ul>
               <ul>
                 <li>tester</li>
@@ -60,8 +69,13 @@ export default function HelpDrawer() {
             </ul>
             <br />
             <img src="/exampleCsv.png" alt="screenshot" />
-            <br />
           </DrawerBody>
+          <DrawerFooter>
+            <p>
+              Built by&nbsp;
+              <a href="mailto:lsadilek@applausemail.com">Lucas Sadilek</a>
+            </p>
+          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     </>

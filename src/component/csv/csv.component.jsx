@@ -17,7 +17,12 @@ function verifyHeaders(expectedHeaders, parsedHeaders) {
   }
 }
 
-// Function 'parseCsvFile' takes a 'file' as a parameter and returns a promise.
+/**
+ * Function 'parseCsvFile' takes a 'file' as a parameter and returns a promise.
+ *
+ * @param {*} file
+ * @returns returns are promise
+ */
 function parseCsvFile(file) {
   return new Promise((resolve, reject) => {
     // Define 'handleFileRead', a function that processes the result of the CSV parsing.
@@ -51,6 +56,8 @@ function parseCsvFile(file) {
       for (const rowData of data) {
         // Create an object 'rowObject' mapping each field to its corresponding value in the CSV row.
         // Note that 'id' is generated using the 'uuidv4' function.
+
+        /* if all of the screenshots are missing then skip this entry */
         if (
           rowData.screenshot1 === undefined &&
           rowData.screenshot2 === undefined &&
@@ -58,6 +65,24 @@ function parseCsvFile(file) {
         ) {
           continue;
         }
+
+        /* check if any of the 3 screenshots do not have any images. If they don't assign a placeholder image URL */
+
+        if (!rowData.screenshot1) {
+          rowData.screenshot1 =
+            'https://placehold.co/200x433/png?text=payment+lineup+N/A';
+        }
+
+        if (!rowData.screenshot2) {
+          rowData.screenshot2 =
+            'https://placehold.co/200x433/png?text=widget+N/A';
+        }
+
+        if (!rowData.screenshot3) {
+          rowData.screenshot3 =
+            'https://placehold.co/200x433/png?text=security+slider+N/A';
+        }
+
         const rowObject = {
           id: uuidv4(),
           slot: rowData.slot,
@@ -69,6 +94,8 @@ function parseCsvFile(file) {
           merchant: rowData.merchant,
           location: rowData.location,
         };
+
+        //console.log(rowObject);
         // Add the created object to the 'rows' array.
         rows.push(rowObject);
       }
@@ -83,10 +110,12 @@ function parseCsvFile(file) {
       reject(error);
     };
 
-    // Use 'Papa.parse' to parse the CSV file.
-    // It takes the 'file' to be parsed and an options object.
-    // 'header: true' indicates that the first row of the CSV contains column headers.
-    // 'complete' and 'error' are callback functions executed on successful parsing or on error, respectively.
+    /* 
+       Use 'Papa.parse' to parse the CSV file.
+       It takes the 'file' to be parsed and an options object.
+       'header: true' indicates that the first row of the CSV contains column headers.
+       'complete' and 'error' are callback functions executed on successful parsing or on error, respectively.
+     */
     Papa.parse(file, {
       header: true,
       complete: handleFileRead,

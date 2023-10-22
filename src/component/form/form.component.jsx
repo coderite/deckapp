@@ -35,6 +35,7 @@ const Form = () => {
     formLoading,
   } = useContext(FormContext);
 
+  // starts the process of
   const createHandler = async () => {
     setProgressCount(() => 0);
     setFormLoading(() => true);
@@ -49,8 +50,10 @@ const Form = () => {
         console.log('creating slide entry: ', entry);
         await createSlide(pptx, entry);
         setProgressCount(prevProgressCount => prevProgressCount + 1);
+        console.log('slide created...');
       }
     } catch (error) {
+      console.log('something went wrong creating slides: ', error.message);
       console.log('caught this error: ', error);
       setFormErrorLabel(error.message);
       errorSeen = true;
@@ -70,10 +73,13 @@ const Form = () => {
     await Promise.all(createSlidesPromises); */
 
     writePresentiationToFile(pptx, 'test.pptx');
+    console.log('deck creation completed');
     setFormLoading(() => false);
 
     if (!errorSeen) {
-      setFormSuccessLabel('All done!');
+      setFormErrorLabel('');
+      setFormSuccessLabel('Success!');
+      console.log('all done!');
     }
   };
 
@@ -112,7 +118,7 @@ const Form = () => {
             )}
             {formSuccessLabel && !formErrorLabel && (
               <AlertMessage
-                data={{ status: 'sucess', message: formSuccessLabel }}
+                data={{ status: 'success', message: formSuccessLabel }}
               />
             )}
 
