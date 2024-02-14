@@ -1,15 +1,30 @@
+/**
+ * @fileoverview This file includes functions to handle image
+ * processing and conversion for a web service built with Express
+ * and Firebase Functions. Applause image links are received and
+ * downloaded. This Cloud Function is needed to operate the
+ * Presenation Creator in order to generate Audit 3.0 reports.
+ * @author Lucas Sadilek
+ * @role Test Engineer III / Automation Lead
+ */
+
 const functions = require("firebase-functions");
+// const {setGlobalOptions} = require("firebase-functions/v2");
+// const {onRequest} = require("firebase-functions/v2/https");
+
 const express = require("express");
 const fetch = require("node-fetch");
 const Jimp = require("jimp");
 const cors = require("cors");
 const app = express();
 
-app.use(cors());
+app.use(cors({origin: true}));
 app.use(express.json());
 
+// setGlobalOptions({memory: "512MB", timeoutSeconds: 540});
+
 /*
-    * This function is called when the user visits the endpoint
+    This function is called when the user visits the endpoint
     It does not rely on Puppeteer Cluster
 */
 
@@ -19,6 +34,10 @@ const fetchAndConvertImageToBase64 = async (url) => {
   const buffer = await response.buffer();
   return buffer;
 };
+
+app.get("/api/", (req, res) => {
+  res.json({"message": "Image conversion cloud function for deckapp."});
+});
 
 // the function that will be called when the user visits the endpoint
 app.post("/api/urlToBase64", async (req, res) => {

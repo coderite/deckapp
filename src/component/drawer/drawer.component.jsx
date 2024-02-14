@@ -11,15 +11,12 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { QuestionOutlineIcon } from '@chakra-ui/icons';
-const pino = require('pino');
-const logger = pino({ prettyPrint: true });
 
 export default function HelpDrawer() {
   const [size, setSize] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleClick = newSize => {
-    logger.info('hello world');
     setSize(newSize);
     onOpen();
   };
@@ -72,7 +69,7 @@ export default function HelpDrawer() {
           </DrawerBody>
           <DrawerFooter>
             <p>
-              Built by&nbsp;
+              v1.1 built by&nbsp;
               <a href="mailto:lsadilek@applausemail.com">Lucas Sadilek</a>
             </p>
           </DrawerFooter>

@@ -9,7 +9,7 @@ import axios from 'axios';
 const sendDataToFirebaseFunction = payload => {
   return new Promise(async (resolve, reject) => {
     const endpoint =
-      'https://us-central1-presentationcreator.cloudfunctions.net/operations-api/api/urlToBase64';
+      ' https://us-central1-presentation-creator-92071.cloudfunctions.net/operations-api/api/urlToBase64';
     try {
       /* await a response from Google Functions */
       const response = await axios.post(endpoint, payload);
@@ -44,7 +44,7 @@ export function createPresentation(title) {
   // Create a new presentation
   const pptx = new PptxGenJS();
   // Set presentation properties
-  pptx.author = 'Lucas Sadilek';
+  pptx.author = 'Applause';
   pptx.title = 'Sample Presentation';
 
   return pptx;
@@ -170,6 +170,115 @@ export async function createSlide(pptx, data) {
   });
 }
 
+// Create a presentation with images and a bulleted list with aspect ratio maintained for the images
+export async function createSlideAsync(data) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // add code
+      const { tester, video, payment, widget, security, merchant, location } =
+        data;
+
+      console.log('converting image links via Firebase...');
+      const [image1, image2, image3] = await Promise.all([
+        sendDataToFirebaseFunction({ image_url: payment }),
+        sendDataToFirebaseFunction({ image_url: widget }),
+        sendDataToFirebaseFunction({ image_url: security }),
+      ]);
+
+      // add the logo to the slide
+      let logoBase64;
+      try {
+        logoBase64 = await convertImageToBase64('/trustlyLogo.png');
+      } catch (error) {
+        console.log(`Error converting image to base64: ${error.message}`);
+      }
+
+      // Specify the maximum dimensions for the images
+      const maxWidth = 200;
+      const maxHeight = 800;
+
+      // Add a bulleted list
+      const infoData = [
+        { text: 'Merchant: ', options: { bold: true } },
+        { text: merchant + '\n', options: { bold: false } },
+        { text: 'Platform: ', options: { bold: true } },
+        { text: 'Mobile iOS\n', options: { bold: false } },
+        { text: 'State: ', options: { bold: true } },
+        { text: location + '\n', options: { bold: false } },
+        { text: 'Auditor: ', options: { bold: true } },
+        { text: tester + '\n', options: { bold: false } },
+      ];
+
+      const videoData = [
+        {
+          text: 'video link',
+          options: {
+            hyperlink: {
+              url: video,
+              tooltip: 'see video',
+            },
+          },
+        },
+      ];
+
+      // Create a new slide
+      const slide = {
+        images: [
+          {
+            data: image1.base64_image,
+            x: pointsToInches(5),
+            y: pointsToInches(5),
+            ...getAspectRatio(image1.width, image1.height, maxWidth, maxHeight),
+          },
+          {
+            data: image2.base64_image,
+            x: pixelsToInches(maxWidth) + pointsToInches(10),
+            y: pointsToInches(5),
+            ...getAspectRatio(image2.width, image2.height, maxWidth, maxHeight),
+          },
+          {
+            data: image3.base64_image,
+            x: pixelsToInches(maxWidth) * 2 + pointsToInches(15),
+            y: pointsToInches(5),
+            ...getAspectRatio(image3.width, image3.height, maxWidth, maxHeight),
+          },
+          {
+            data: logoBase64,
+            x: pointsToInches(600),
+            y: pointsToInches(5),
+            ...getAspectRatio(1250, 416, 150, 150),
+          },
+        ],
+        text: [
+          {
+            data: infoData,
+            options: {
+              x: pointsToInches(480),
+              y: pointsToInches(91),
+              w: pointsToInches(225),
+              h: pointsToInches(150),
+              fontSize: 14,
+            },
+          },
+          {
+            data: videoData,
+            options: {
+              x: pointsToInches(5),
+              y: pointsToInches(350),
+              w: pointsToInches(500),
+              h: pointsToInches(50),
+            },
+          },
+        ],
+      };
+
+      resolve(slide);
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 function convertImageToBase64(filepath) {
   return new Promise((resolve, reject) => {
     // Fetch the image file
@@ -197,4 +306,22 @@ function convertImageToBase64(filepath) {
 export function writePresentiationToFile(pptx) {
   // Save the presentation
   pptx.writeFile({ fileName: 'slides.pptx' }).then(blob => {});
+}
+
+/**
+ *
+ * @param {*} pptx
+ * @param {*} slideDatas
+ */
+export function addSlidesToPresentation(pptx, slideDatas) {
+  for (const slideData of slideDatas) {
+    const slide = pptx.addSlide();
+    for (const imageData of slideData.images) {
+      slide.addImage(imageData);
+    }
+
+    for (const text of slideData.text) {
+      slide.addText(text.data, text.options);
+    }
+  }
 }

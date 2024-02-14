@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "presentationcreator"
-  }
+    "default": "presentationcreator",
+    "staging": "presentation-creator-92071"
+  },
+  "targets": {},
+  "etags": {}
 }

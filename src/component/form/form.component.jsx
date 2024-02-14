@@ -15,8 +15,9 @@ import { FormContext } from '../../contexts/form.context.js';
 import { FilenameTag } from '../filename-tag/filename.tag.component.jsx';
 import {
   createPresentation,
-  createSlide,
+  createSlideAsync,
   writePresentiationToFile,
+  addSlidesToPresentation,
 } from '../../pptx.js';
 import HelpDrawer from '../drawer/drawer.component';
 import AlertMessage from '../alert/alert.component';
@@ -45,7 +46,7 @@ const Form = () => {
     const pptx = createPresentation();
 
     // a try catch block is needed to catch nested errors in async functions and display it on the UI
-    try {
+    /*   try {
       for (const entry of records) {
         console.log('creating slide entry: ', entry);
         await createSlide(pptx, entry);
@@ -57,29 +58,27 @@ const Form = () => {
       console.log('caught this error: ', error);
       setFormErrorLabel(error.message);
       errorSeen = true;
-    }
+    } */
 
-    /* const createSlidesPromises = records.map(async entry => {
-      console.log('creating slide entry', entry);
-      try {
-        await createSlide(pptx, entry);
-      } catch (error) {
-        console.log('error', error);
-      }
-      setProgressCount(prevProgressCount => prevProgressCount + 1);
-      console.log('createHandler end of loop');
-    });
+    /* collect all the slides in basic object that we can pass to the addSildesToPresentation method */
+    const slides = await Promise.all(
+      records.map(async record => {
+        const slide = await createSlideAsync(record);
+        setProgressCount(prevProgressCount => prevProgressCount + 1);
+        return slide;
+      })
+    );
 
-    await Promise.all(createSlidesPromises); */
+    addSlidesToPresentation(pptx, slides);
 
     writePresentiationToFile(pptx, 'test.pptx');
     console.log('deck creation completed');
+    console.log('wait for download...');
     setFormLoading(() => false);
 
     if (!errorSeen) {
       setFormErrorLabel('');
       setFormSuccessLabel('Success!');
-      console.log('all done!');
     }
   };
 
